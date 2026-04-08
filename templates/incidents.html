@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SOC Incident Management</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+</head>
+
+<body class="bg-slate-950 text-white">
+
+<div class="p-6">
+
+<h1 class="text-3xl font-bold text-cyan-400 mb-6 text-center">
+🚨 SOC Incident Management
+</h1>
+
+<div class="text-center mb-4">
+<button onclick="location.href='/'" 
+class="bg-cyan-600 px-4 py-2 rounded hover:bg-cyan-700">
+Dashboard
+</button>
+</div>
+
+<div class="overflow-x-auto">
+
+<table class="w-full border border-slate-700 rounded-lg overflow-hidden">
+
+<thead class="bg-slate-900 text-cyan-400">
+<tr>
+<th class="p-3">ID</th>
+<th class="p-3">IP</th>
+<th class="p-3">Attack</th>
+<th class="p-3">Severity</th>
+<th class="p-3">Status</th>
+<th class="p-3">Action Panel</th>
+</tr>
+</thead>
+
+<tbody id="inc" class="text-center"></tbody>
+
+</table>
+
+</div>
+</div>
+
+<script>
+
+// ---------- UI HELPERS ----------
+
+function getBadge(severity){
+if(severity=="High") return "bg-red-600";
+if(severity=="Medium") return "bg-yellow-500";
+return "bg-green-600";
+}
+
+function getStatusColor(status){
+if(status=="Resolved") return "text-green-400";
+if(status=="In Progress") return "text-yellow-400";
+return "text-red-400";
+}
+
+// ---------- LOAD DATA ----------
+
+function loadData(){
+
+fetch("/api/incidents")
+.then(r=>r.json())
+.then(data=>{
+
+let html="";
+
+data.forEach(i=>{
+
+html+=`
+<tr class="border-b border-slate-800 hover:bg-slate-900">
+
+<td class="p-3">${i[0]}</td>
+<td class="p-3 text-cyan-300">${i[1]}</td>
+<td class="p-3">${i[2]}</td>
+
+<td class="p-3">
+<span class="px-2 py-1 rounded ${getBadge(i[3])}">
+${i[3]}
+</span>
+</td>
+
+<td class="p-3 ${getStatusColor(i[4])}">
+${i[4]}
+</td>
+
+<td class="p-3">
+
+<div class="flex flex-col gap-2">
+
+<input id="a_${i[0]}" 
+class="p-2 bg-slate-900 border border-cyan-500 rounded"
+placeholder="Assign Analyst"
+value="${i[5]||''}">
+
+<textarea id="c_${i[0]}" 
+class="p-2 bg-slate-900 border border-cyan-500 rounded"
+placeholder="Write verdict">${i[6]||''}</textarea>
+
+<select id="s_${i[0]}" 
+class="bg-slate-900 border border-cyan-500 rounded p-2">
+
+<option ${i[4]=="Open"?"selected":""}>Open</option>
+<option ${i[4]=="In Progress"?"selected":""}>In Progress</option>
+<option ${i[4]=="Resolved"?"selected":""}>Resolved</option>
+
+</select>
+
+<div class="flex gap-2 justify-center">
+
+<button onclick="save(${i[0]})"
+class="bg-green-500 px-3 py-1 rounded hover:bg-green-600">
+Save
+</button>
+
+<button onclick="respond('${i[2]}','${i[1]}')"
+class="bg-blue-500 px-3 py-1 rounded hover:bg-blue-600">
+Respond
+</button>
+
+<button onclick="details(${i[0]})"
+class="bg-orange-500 px-3 py-1 rounded hover:bg-orange-600">
+Details
+</button>
+
+</div>
+
+</div>
+
+</td>
+</tr>
+`;
+});
+
+document.getElementById("inc").innerHTML = html;
+
+})
+.catch(err=>{
+console.error("ERROR:", err);
+});
+
+}
+
+// ---------- SAVE ----------
+
+function save(id){
+
+let f = new FormData();
+f.append("analyst", document.getElementById("a_"+id).value);
+f.append("comment", document.getElementById("c_"+id).value);
+f.append("status", document.getElementById("s_"+id).value);
+
+fetch("/update_incident/"+id,{
+method:"POST",
+body:f
+})
+.then(()=>loadData());
+
+}
+
+// ---------- RESPOND ----------
+
+function respond(attack,ip){
+
+fetch("/respond",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({attack:attack,ip:ip})
+})
+.then(r=>r.json())
+.then(data=>{
+alert(data.action);
+});
+
+}
+
+// ---------- DETAILS ----------
+
+function details(id){
+alert("🔍 Showing detailed analysis for Incident ID: " + id);
+}
+
+// ---------- INIT ----------
+
+loadData();
+
+</script>
+
+</body>
+</html>
