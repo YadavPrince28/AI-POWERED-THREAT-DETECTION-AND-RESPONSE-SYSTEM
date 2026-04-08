@@ -50,8 +50,8 @@ Cyber attacks such as DDoS, Brute Force, and SQL Injection are rapidly increasin
 ## 🚀 Installation & Setup
 
 ```bash
-git clone https://github.com/yourusername/repo-name.git
-cd repo-name
+git clone https://github.com/YadavPrince28/AI-POWERED-THREAT-DETECTION-AND-RESPONSE-SYSTEM
+cd AI-POWERED-THREAT-DETECTION-AND-RESPONSE-SYSTEM
 pip install -r requirements.txt
 python app.py
 
@@ -100,7 +100,7 @@ http://127.0.0.1:5000
 ---
 
 ## 👨‍💻 Author
-Prince Kumar Yadav
+**Prince Kumar Yadav**<br>
 B.Tech CSE | Cybersecurity Enthusiast<br>
 Focused on building intelligent security systems and real-world SOC solutions
 
